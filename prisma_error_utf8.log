@@ -1,0 +1,30 @@
+﻿node.exe : Environment 
+variables loaded from .env
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (Environme  
+  nt variables loaded from    
+ .env:String) [], RemoteEx    
+ception
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "db.letkqfoqifnkzjrioxgf.supabase.co:5432"
+
+Error: P1001: Can't reach 
+database server at `db.letkqfo
+qifnkzjrioxgf.supabase.co:5432
+`
+
+Please make sure your 
+database server is running at 
+`db.letkqfoqifnkzjrioxgf.supab
+ase.co:5432`.
