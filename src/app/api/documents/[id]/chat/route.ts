@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
+import { Groq } from 'groq-sdk';
 
 // GET - Get chat messages for a document
 export async function GET(
@@ -78,15 +78,17 @@ export async function POST(
     });
 
     try {
-      // Initialize ZAI SDK
-      const zai = await ZAI.create();
+      // Initialize Groq SDK
+      const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY,
+      });
 
       // Truncate content if too long
       const maxLength = 15000;
       const documentContent =
         document.content.length > maxLength
           ? document.content.substring(0, maxLength) +
-            '\n\n[Content truncated...]'
+          '\n\n[Content truncated...]'
           : document.content;
 
       // Build conversation history
@@ -96,10 +98,11 @@ export async function POST(
       })) as Array<{ role: 'user' | 'assistant'; content: string }>;
 
       // Create the chat completion
-      const completion = await zai.chat.completions.create({
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
         messages: [
           {
-            role: 'assistant',
+            role: 'system',
             content: `You are a helpful AI assistant that answers questions about documents. You have access to the document content and can provide accurate, relevant answers.
 
 Guidelines:
@@ -122,7 +125,6 @@ ${documentContent}`,
             content: userMessage,
           },
         ],
-        thinking: { type: 'disabled' },
       });
 
       const assistantResponse = completion.choices[0]?.message?.content;

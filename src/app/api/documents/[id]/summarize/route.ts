@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
+import { Groq } from 'groq-sdk';
 
 const MODE_PROMPTS = {
   study: `You are an expert educational content summarizer. Your task is to create study-friendly summaries that help students learn and memorize key information.
@@ -157,25 +157,28 @@ export async function POST(
     });
 
     try {
-      // Initialize ZAI SDK
-      const zai = await ZAI.create();
+      // Initialize Groq SDK
+      const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY,
+      });
 
       // Truncate content if too long (to avoid token limits)
       const maxLength = 20000;
       const contentToSummarize =
         document.content.length > maxLength
           ? document.content.substring(0, maxLength) +
-            '\n\n[Content truncated due to length...]'
+          '\n\n[Content truncated due to length...]'
           : document.content;
 
       const lengthConfig = LENGTH_CONFIG[length];
       const modePrompt = MODE_PROMPTS[mode] || MODE_PROMPTS.general;
 
       // Create the summary using LLM
-      const completion = await zai.chat.completions.create({
+      const completion = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
         messages: [
           {
-            role: 'assistant',
+            role: 'system',
             content: `${modePrompt}
 
 ${lengthConfig.instruction}
@@ -196,7 +199,6 @@ Type: ${document.fileType.toUpperCase()}
 ${contentToSummarize}`,
           },
         ],
-        thinking: { type: 'disabled' },
       });
 
       const summary = completion.choices[0]?.message?.content;
