@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { writeFile, unlink, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import os from 'os';
 
-const execAsync = promisify(exec);
-
-// Ensure upload directory exists
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
+// Use /tmp on serverless (Vercel), fallback to OS temp dir
+const UPLOAD_DIR = path.join(os.tmpdir(), 'briefly-uploads');
 
 async function ensureUploadDir() {
   if (!existsSync(UPLOAD_DIR)) {
@@ -17,37 +14,50 @@ async function ensureUploadDir() {
   }
 }
 
-// Extract text from different file types
-async function extractTextFromFile(
-  filePath: string,
-  fileType: string
+// Extract text from file buffer directly (no CLI tools needed)
+async function extractTextFromBuffer(
+  buffer: Uint8Array,
+  fileType: string,
+  _filePath?: string
 ): Promise<string> {
   try {
     switch (fileType) {
+      case 'txt': {
+        return new TextDecoder('utf-8').decode(buffer).trim();
+      }
       case 'pdf': {
-        // Use pdftotext for PDF extraction
-        const { stdout } = await execAsync(`pdftotext -layout "${filePath}" -`);
-        return stdout.trim();
+        // Try to use pdf-parse if available, otherwise read raw text
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const pdfParse = (await import(/* webpackIgnore: true */ 'pdf-parse' as string)).default;
+          const data = await pdfParse(buffer);
+          return (data.text || '').trim();
+        } catch {
+          // Fallback: attempt basic text extraction from buffer
+          const text = new TextDecoder('utf-8')
+            .decode(buffer)
+            .replace(/[^\x20-\x7E\n\r\t\u0E00-\u0E7F]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          if (text.length > 50) return text;
+          throw new Error(
+            'PDF text extraction is not available. Please upload a .txt file instead, or install pdf-parse.'
+          );
+        }
       }
       case 'docx': {
-        // Use pandoc for DOCX extraction
-        const { stdout } = await execAsync(
-          `pandoc -f docx -t plain "${filePath}"`
+        throw new Error(
+          'DOCX file processing is not available in serverless environment. Please upload a .txt file instead.'
         );
-        return stdout.trim();
-      }
-      case 'txt': {
-        // Read text file directly
-        const { readFile } = await import('fs/promises');
-        const content = await readFile(filePath, 'utf-8');
-        return content.trim();
       }
       default:
         throw new Error(`Unsupported file type: ${fileType}`);
     }
   } catch (error) {
     console.error('Text extraction error:', error);
-    throw new Error('Failed to extract text from document');
+    throw error instanceof Error
+      ? error
+      : new Error('Failed to extract text from document');
   }
 }
 
@@ -108,17 +118,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Save file temporarily
+    // Read file into buffer
     const buffer = Buffer.from(await file.arrayBuffer());
-    const tempFileName = `${Date.now()}-${file.name}`;
-    const tempFilePath = path.join(UPLOAD_DIR, tempFileName);
 
-    await writeFile(tempFilePath, buffer);
+    // Extract text directly from buffer (no filesystem needed for txt)
+    let content: string;
+    let tempFilePath: string | undefined = undefined;
 
     try {
-      // Extract text from file
-      const content = await extractTextFromFile(tempFilePath, fileType);
+      content = await extractTextFromBuffer(buffer, fileType);
+    } catch (extractError) {
+      // If direct extraction fails, try via temp file
+      const tempFileName = `${Date.now()}-${file.name}`;
+      tempFilePath = path.join(UPLOAD_DIR, tempFileName);
+      await writeFile(tempFilePath, buffer);
 
+      try {
+        content = await extractTextFromBuffer(buffer, fileType, tempFilePath);
+      } catch {
+        throw extractError;
+      }
+    }
+
+    try {
       if (!content || content.length < 10) {
         throw new Error('Could not extract meaningful text from the document');
       }
@@ -141,11 +163,13 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(document);
     } finally {
-      // Clean up temporary file
-      try {
-        await unlink(tempFilePath);
-      } catch {
-        // Ignore cleanup errors
+      // Clean up temporary file if created
+      if (tempFilePath) {
+        try {
+          await unlink(tempFilePath);
+        } catch {
+          // Ignore cleanup errors
+        }
       }
     }
   } catch (error) {

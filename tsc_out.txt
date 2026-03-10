@@ -1,0 +1,2 @@
+﻿src/app/api/documents/route.ts(26,32): error TS2554: Expected 0 arguments, but got 1.
+src/app/api/documents/route.ts(38,23): error TS2554: Expected 0 arguments, but got 1.
