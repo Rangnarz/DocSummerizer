@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Document {
+  id           String       @id @default(cuid())
+  filename     String
+  fileType     String       // pdf, docx, txt, url, image
+  fileSize     Int          // in bytes
+  content      String       // extracted text content
+  summary      String?      // AI-generated summary
+  summaryMode  String       @default("general") // study, report, general
+  summaryLength String      @default("medium") // short, medium, detailed
+  status       String       @default("uploaded") // uploaded, processing, summarized, error
+  folderId     String?
+  folder       Folder?      @relation(fields: [folderId], references: [id])
+  tags         Tag[]
+  chatMessages ChatMessage[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Folder {
+  id        String     @id @default(cuid())
+  name      String
+  color     String     @default("#6366f1")
+  documents Document[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  name      String
+  color     String     @default("#6366f1")
+  documents Document[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  role       String   // user, assistant
+  content    String
+  createdAt  DateTime @default(now())
+}
