@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Determine file type from MIME type and file extension (extension takes priority)
+// Determine file type from file extension first, MIME as fallback
 function detectFileType(file: File): string | null {
   const ext = file.name.split('.').pop()?.toLowerCase();
 
-  // Extension-based detection (most reliable)
   if (ext === 'pdf') return 'pdf';
   if (ext === 'docx') return 'docx';
   if (ext === 'txt') return 'txt';
@@ -28,24 +27,22 @@ async function extractTextFromBuffer(buffer: Buffer, fileType: string): Promise<
     }
 
     case 'pdf': {
-      // pdf-parse is a real Node.js CommonJS module — kept external via next.config.ts
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require('pdf-parse');
+      // unpdf is designed for serverless/Node.js and does NOT require browser globals (no DOMMatrix)
+      const { extractText } = await import('unpdf');
 
-      let data: { text: string; numpages: number };
+      let result: { text: string; totalPages: number };
       try {
-        data = await pdfParse(buffer);
+        result = await extractText(new Uint8Array(buffer), { mergePages: true });
       } catch (parseError) {
-        console.error('pdf-parse failed:', parseError);
+        console.error('unpdf extractText failed:', parseError);
         throw new Error('ไม่สามารถอ่านไฟล์ PDF ได้ ไฟล์อาจเสียหายหรือมีรหัสผ่านป้องกัน');
       }
 
-      const text = (data.text || '').trim();
+      const text = (result.text || '').trim();
 
       if (!text || text.length < 50) {
-        // Likely a scanned / image-only PDF
         throw new Error(
-          `ไม่สามารถดึงข้อความจาก PDF ได้ (${data.numpages} หน้า)\n` +
+          `ไม่สามารถดึงข้อความจาก PDF ได้ (${result.totalPages} หน้า)\n` +
           'PDF นี้อาจเป็นไฟล์สแกน (รูปภาพ) ซึ่งไม่มีข้อความที่อ่านได้\n' +
           'กรุณาแปลงเป็น PDF ที่มีข้อความ หรืออัปโหลดเป็นไฟล์ .txt แทน'
         );
@@ -94,7 +91,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'ไม่พบไฟล์ที่แนบมา' }, { status: 400 });
     }
 
-    // Detect file type from both extension and MIME type
+    // Detect file type from extension (most reliable) then MIME
     const fileType = detectFileType(file);
     if (!fileType) {
       return NextResponse.json(
