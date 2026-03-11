@@ -24,6 +24,7 @@ import {
   FileTextIcon,
   FolderOpen,
   Send,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -108,6 +109,65 @@ const LENGTH_CONFIG = {
   short: { label: 'Short', description: '~150 words' },
   medium: { label: 'Medium', description: '~300 words' },
   detailed: { label: 'Detailed', description: '~500 words' },
+};
+
+const extractFlashcards = (text: string) => {
+  if (!text) return [];
+  const sections = text.split('\n');
+  const flashcards: { q: string; a: string }[] = [];
+  let currentQ = '';
+  let currentA = '';
+  let state: 'none' | 'q' | 'a' = 'none';
+
+  for (let i = 0; i < sections.length; i++) {
+    const line = sections[i].trim();
+    const lowerLine = line.toLowerCase().replace(/\*/g, '');
+
+    if (lowerLine.startsWith('q') && lowerLine.match(/^q\d*[:.)-]/)) {
+      if (currentQ && currentA) {
+        flashcards.push({ q: currentQ.trim(), a: currentA.trim() });
+      }
+      currentQ = line.replace(/^\*\*?Q\d*[:.)-]\*\*?\s*/i, '').replace(/^Q\d*[:.)-]\s*/i, '');
+      currentA = '';
+      state = 'q';
+    } else if (lowerLine.startsWith('a') && lowerLine.match(/^a\d*[:.)-]/)) {
+      currentA = line.replace(/^\*\*?A\d*[:.)-]\*\*?\s*/i, '').replace(/^A\d*[:.)-]\s*/i, '');
+      state = 'a';
+    } else if (line !== '') {
+      if (state === 'q') currentQ += '\n' + line;
+      else if (state === 'a') currentA += '\n' + line;
+    }
+  }
+  if (currentQ && currentA) {
+    flashcards.push({ q: currentQ.trim(), a: currentA.trim() });
+  }
+  return flashcards;
+};
+
+const Flashcard = ({ q, a }: { q: string; a: string }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  return (
+    <div className="relative w-full h-[250px] cursor-pointer" style={{ perspective: '1000px' }} onClick={() => setIsFlipped(!isFlipped)}>
+      <motion.div
+        className="w-full h-full relative"
+        style={{ transformStyle: 'preserve-3d' }}
+        initial={false}
+        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+      >
+        {/* Front */}
+        <div className="absolute w-full h-full bg-white dark:bg-slate-800 rounded-xl shadow-md border p-6 flex items-center justify-center text-center" style={{ backfaceVisibility: 'hidden' }}>
+          <p className="font-medium text-lg text-violet-700 dark:text-violet-300">{q}</p>
+        </div>
+        {/* Back */}
+        <div className="absolute w-full h-full bg-violet-500 rounded-xl shadow-md border-violet-600 p-6 flex flex-col items-center justify-center text-center" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+          <div className="overflow-y-auto max-h-full w-full scrollbar-hide">
+            <p className="text-white text-sm whitespace-pre-wrap">{a}</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
 };
 
 export default function DocumentSummarizer() {
@@ -657,8 +717,13 @@ export default function DocumentSummarizer() {
                   </div>
                 ) : (
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className={`grid w-full ${selectedDoc.summaryMode === 'study' && extractFlashcards(selectedDoc.summary || '').length > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                       <TabsTrigger value="summary">สรุปเอกสาร</TabsTrigger>
+                      {selectedDoc.summaryMode === 'study' && extractFlashcards(selectedDoc.summary || '').length > 0 && (
+                        <TabsTrigger value="flashcards" className="gap-1">
+                          <Layers className="w-4 h-4" />แฟลชการ์ด
+                        </TabsTrigger>
+                      )}
                       <TabsTrigger value="chat" className="gap-1">
                         <MessageCircle className="w-4 h-4" />แชทกับเอกสาร
                       </TabsTrigger>
@@ -794,6 +859,18 @@ export default function DocumentSummarizer() {
                             {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                           </Button>
                         </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="flashcards" className="mt-4">
+                      <div className="flex flex-col h-[400px]">
+                        <ScrollArea className="flex-1 pr-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
+                            {extractFlashcards(selectedDoc.summary || '').map((card, idx) => (
+                              <Flashcard key={idx} q={card.q} a={card.a} />
+                            ))}
+                          </div>
+                        </ScrollArea>
                       </div>
                     </TabsContent>
                   </Tabs>

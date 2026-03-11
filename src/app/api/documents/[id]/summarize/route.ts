@@ -163,7 +163,7 @@ export async function POST(
       });
 
       // Truncate content if too long (to avoid token limits)
-      const maxLength = 20000;
+      const maxLength = 6000;
       const contentToSummarize =
         document.content.length > maxLength
           ? document.content.substring(0, maxLength) +
@@ -175,7 +175,7 @@ export async function POST(
 
       // Create the summary using LLM
       const completion = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',
