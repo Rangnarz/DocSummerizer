@@ -1,141 +1,72 @@
-# 🚀 Welcome to Z.ai Code Scaffold
+# 🚀 Briefly - สรุปเอกสารอัจฉริยะด้วย AI
 
-A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
-
-## ✨ Technology Stack
-
-This scaffold provides a robust foundation built with:
-
-### 🎯 Core Framework
-- **⚡ Next.js 16** - The React framework for production with App Router
-- **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
-
-### 🧩 UI Components & Styling
-- **🧩 shadcn/ui** - High-quality, accessible components built on Radix UI
-- **🎯 Lucide React** - Beautiful & consistent icon library
-- **🌈 Framer Motion** - Production-ready motion library for React
-- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
-
-### 📋 Forms & Validation
-- **🎣 React Hook Form** - Performant forms with easy validation
-- **✅ Zod** - TypeScript-first schema validation
-
-### 🔄 State Management & Data Fetching
-- **🐻 Zustand** - Simple, scalable state management
-- **🔄 TanStack Query** - Powerful data synchronization for React
-- **🌐 Fetch** - Promise-based HTTP request
-
-### 🗄️ Database & Backend
-- **🗄️ Prisma** - Next-generation TypeScript ORM
-- **🔐 NextAuth.js** - Complete open-source authentication solution
-
-### 🎨 Advanced UI Features
-- **📊 TanStack Table** - Headless UI for building tables and datagrids
-- **🖱️ DND Kit** - Modern drag and drop toolkit for React
-- **📊 Recharts** - Redefined chart library built with React and D3
-- **🖼️ Sharp** - High performance image processing
-
-### 🌍 Internationalization & Utilities
-- **🌍 Next Intl** - Internationalization library for Next.js
-- **📅 Date-fns** - Modern JavaScript date utility library
-- **🪝 ReactUse** - Collection of essential React hooks for modern development
-
-## 🎯 Why This Scaffold?
-
-- **🏎️ Fast Development** - Pre-configured tooling and best practices
-- **🎨 Beautiful UI** - Complete shadcn/ui component library with advanced interactions
-- **🔒 Type Safety** - Full TypeScript configuration with Zod validation
-- **📱 Responsive** - Mobile-first design principles with smooth animations
-- **🗄️ Database Ready** - Prisma ORM configured for rapid backend development
-- **🔐 Auth Included** - NextAuth.js for secure authentication flows
-- **📊 Data Visualization** - Charts, tables, and drag-and-drop functionality
-- **🌍 i18n Ready** - Multi-language support with Next Intl
-- **🚀 Production Ready** - Optimized build and deployment settings
-- **🤖 AI-Friendly** - Structured codebase perfect for AI assistance
-
-## 🚀 Quick Start
-
-```bash
-# Install dependencies
-bun install
-
-# Start development server
-bun run dev
-
-# Build for production
-bun run build
-
-# Start production server
-bun start
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see your application running.
-
-## 🤖 Powered by Z.ai
-
-This scaffold is optimized for use with [Z.ai](https://chat.z.ai) - your AI assistant for:
-
-- **💻 Code Generation** - Generate components, pages, and features instantly
-- **🎨 UI Development** - Create beautiful interfaces with AI assistance  
-- **🔧 Bug Fixing** - Identify and resolve issues with intelligent suggestions
-- **📝 Documentation** - Auto-generate comprehensive documentation
-- **🚀 Optimization** - Performance improvements and best practices
-
-Ready to build something amazing? Start chatting with Z.ai at [chat.z.ai](https://chat.z.ai) and experience the future of AI-powered development!
-
-## 📁 Project Structure
-
-```
-src/
-├── app/                 # Next.js App Router pages
-├── components/          # Reusable React components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-└── lib/                # Utility functions and configurations
-```
-
-## 🎨 Available Features & Components
-
-This scaffold includes a comprehensive set of modern web development tools:
-
-### 🧩 UI Components (shadcn/ui)
-- **Layout**: Card, Separator, Aspect Ratio, Resizable Panels
-- **Forms**: Input, Textarea, Select, Checkbox, Radio Group, Switch
-- **Feedback**: Alert, Toast (Sonner), Progress, Skeleton
-- **Navigation**: Breadcrumb, Menubar, Navigation Menu, Pagination
-- **Overlay**: Dialog, Sheet, Popover, Tooltip, Hover Card
-- **Data Display**: Badge, Avatar, Calendar
-
-### 📊 Advanced Data Features
-- **Tables**: Powerful data tables with sorting, filtering, pagination (TanStack Table)
-- **Charts**: Beautiful visualizations with Recharts
-- **Forms**: Type-safe forms with React Hook Form + Zod validation
-
-### 🎨 Interactive Features
-- **Animations**: Smooth micro-interactions with Framer Motion
-- **Drag & Drop**: Modern drag-and-drop functionality with DND Kit
-- **Theme Switching**: Built-in dark/light mode support
-
-### 🔐 Backend Integration
-- **Authentication**: Ready-to-use auth flows with NextAuth.js
-- **Database**: Type-safe database operations with Prisma
-- **API Client**: HTTP requests with Fetch + TanStack Query
-- **State Management**: Simple and scalable with Zustand
-
-### 🌍 Production Features
-- **Internationalization**: Multi-language support with Next Intl
-- **Image Optimization**: Automatic image processing with Sharp
-- **Type Safety**: End-to-end TypeScript with Zod validation
-- **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
-
-## 🤝 Get Started with Z.ai
-
-1. **Clone this scaffold** to jumpstart your project
-2. **Visit [chat.z.ai](https://chat.z.ai)** to access your AI coding assistant
-3. **Start building** with intelligent code generation and assistance
-4. **Deploy with confidence** using the production-ready setup
+Briefly เป็นเว็บแอปพลิเคชันสำหรับสรุปและจัดการเอกสารด้วย AI ที่ทันสมัย รองรับภาษาไทยอย่างสมบูรณ์ ช่วยให้คุณสามารถอ่าน, สรุป, และทบทวนความรู้จากไฟล์ PDF, Word (DOCX) และ Text (TXT) ได้อย่างรวดเร็วและมีประสิทธิภาพ
 
 ---
 
-Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
+## 📖 วิธีใช้งานลัด (Quick Start)
+
+1. **อัปโหลดเอกสาร** ลากไฟล์ของคุณ (PDF, DOCX, TXT) ลงในกล่องอัปโหลดด้านซ้ายบน
+2. **เลือกเอกสาร** ที่ต้องการสรุปจากแถบเมนูด้านซ้าย
+3. **ปรับแต่งการสรุป** เลือก "โหมดสรุป" และ "ความยาวของสรุป" ที่ต้องการ แล้วเริ่มให้ AI สรุปให้
+4. **ดูผลลัพธ์** แถบด้านขวาจะแสดงผลสรุป คุณสามารถกดตัวเลือก "อ่านออกเสียง" (TTS), หรือพูดคุยต่อกับเอกสารในแถบแชท
+
+---
+
+## ✨ คุณสมบัติหลักและวิธีใช้งานโดยละเอียด
+
+### 1. 📤 การอัปโหลดเอกสาร (Upload Document)
+รองรับไฟล์ นามสกุล **.pdf**, **.docx**, และ **.txt** 
+ขนาดไฟล์สูงสุดที่รองรับคือ **10MB**
+- **วิธีทำ:** ในหน้าแรก (Dashboard) คุณสามารถ **คลิกเพื่อเลือกไฟล์** ในกล่องอัปโหลด หรือ **ลากและวางไฟล์ (Drag & Drop)** ลงในกล่องได้โดยตรง หลังจากอัปโหลดสำเร็จ ไฟล์จะไปปรากฏที่รายการ "เอกสารของคุณ" ทางด้านซ้าย
+
+### 2. 📝 โหมดการสรุปเอกสาร (Summarization Modes)
+เมื่อคลิกที่เอกสาร คุณสามารถปรับตัวเลือกเพื่อสร้างสรุปได้ 3 โหมด ดังนี้:
+- 📖 **Study Mode (โหมดการเรียน):** เน้นดึงคอนเซปต์หลัก คำศัพท์สำคัญ และสร้างคำถาม-คำตอบ (Flashcards) สำหรับทบทวน
+- 📊 **Report Mode (โหมดรายงาน):** สรุปข้อค้นพบสำคัญ (Key findings), ตัวชี้วัด, และข้อเสนอแนะ เหมาะสำหรับงานวิจัยหรือรายงานธุรกิจ
+- 📄 **General Mode (โหมดทั่วไป):** สรุปภาพรวมแบบครอบคลุมและวิเคราะห์แบบ 5W1H (ใคร ทำอะไร ที่ไหน เมื่อไหร่ อย่างไร ทำไม)
+
+*นอกจากนี้ยังสามารถเลือก **ความยาวในการสรุป (Length)** ได้ทั้งแบบ สั้น (Short), ปานกลาง (Medium), หรือ แบบละเอียด (Detailed)*
+
+### 3. 🧠 แฟลชการ์ดสำหรับทบทวน (Flashcards)
+หากเลือกใช้โหมดการสรุปเป็นแบบ **"Study Mode"** ระบบจะสร้างการ์ดคำถาม-คำตอบ (Flashcards) ท้ายสรุปโดยอัตโนมัติ 
+- **วิธีทำ:** โดยสามารถเข้าไปที่แถบ **"แฟลชการ์ด" (บริเวณข้างๆ แถบสรุปเอกสาร)** เพื่อทดสอบความจำ โดยคลิกที่การ์ดเพื่อพลิกดูเฉลยได้ทันที
+
+### 4. 💬 แชทกับเอกสาร (Document Chat)
+คุณสามารถตั้งคำถามเพิ่มเติมเจาะลึกในเนื้อหา หรือให้ AI อธิบายเอกสารเพิ่มเติมจากที่สรุปไว้ได้
+- **วิธีทำ:** เปลี่ยนไปที่แถบ **"แชทกับเอกสาร" (Chat)** และพิมพ์คำถามที่คุณอยากรู้ AI จะให้คำตอบโดยอิงจากเนื้อหาของเอกสารต้นฉบับ
+
+### 5. 🔊 การอ่านออกเสียง (Text-to-Speech)
+คุณสามารถสั่งให้ระบบอ่านข้อความที่สรุปออกมาเป็นเสียงภาษาไทยได้
+- **วิธีทำ:** บริเวณมุมบนขวาของแผงสรุปเอกสาร ให้คลิกปุ่ม **"อ่านออกเสียง"** ระบบจะอ่านเนื้อหาทั้งหมดให้ฟัง และคุณสามารถกดคำว่า **"หยุด"** เพื่อยกเลิกการอ่านได้
+
+### 6. 📥 การคัดลอก และ สั่งออกสำเนา (Copy & Export)
+หลังจากเอกสารถูกสรุปผลเรียบร้อยแล้ว:
+- 📋 **คัดลอก (Copy):** กดปุ่มคัดลอก เพื่อคัดลอกข้อความสรุปทั้งหมดเป็น Markdown ไปใช้งานต่อ
+- 📤 **ส่งออก (Export):** กดปุ่มส่งออก และเลือกส่งออกเป็นรูปแบบ PDF หรือ DOCX (ระบบจะให้เป็นไฟล์ Markdown ที่พร้อมนำไปจัดรูปแบบต่อในโปรแกรมอื่น)
+
+---
+
+## 🛠 เทคโนโลยี (Tech Stack)
+
+โปรเจกต์นี้ถูกพัฒนาต่อยอดมาจาก Z.ai Code Scaffold โดยเลือกใช้:
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS 4, Framer Motion
+- **UI Components:** shadcn/ui, Lucide React
+- **Backend/AI:** Next.js API Routes, Prisma ORM, AI / LLM Integration (Groq API)
+- **Database:** PostgreSQL (ผ่านการจัดการของ Prisma)
+
+## 💻 การติดตั้งและรันในเครื่องส่วนตัว (Local Development)
+
+```bash
+# 1. ติดตั้ง Dependencies (ใช้ Bun ตาม Scaffold เดิม)
+bun install
+
+# 2. ตั้งค่า Database (ตัวอย่างเช่น PostgreSQL / Supabase)
+bun run db:generate
+bun run db:push
+
+# 3. รันเซิร์ฟเวอร์
+bun run dev
+```
+
+เปิด [http://localhost:3000](http://localhost:3000) ในเบราว์เซอร์ของคุณเพื่อใช้งาน!
