@@ -132,12 +132,16 @@ export default function DocumentSummarizer() {
   const fetchDocuments = useCallback(async () => {
     try {
       const response = await fetch('/api/documents');
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data);
+      const data = await response.json();
+      if (!response.ok) {
+        console.error('Failed to fetch documents:', data.error);
+        toast.error('โหลดเอกสารล้มเหลว', { description: data.error || 'ลองรีเฟรชหน้า' });
+        return;
       }
+      setDocuments(data);
     } catch (error) {
       console.error('Failed to fetch documents:', error);
+      toast.error('โหลดเอกสารล้มเหลว', { description: 'ตรวจสอบการเชื่อมต่อ' });
     }
   }, []);
 
@@ -345,13 +349,17 @@ export default function DocumentSummarizer() {
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error('Failed');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
 
       setChatMessages((prev) => prev.filter((m) => m.id !== 'temp'));
       setChatMessages((prev) => [...prev, data.userMessage, data.assistantMessage]);
-    } catch {
+    } catch (err) {
       setChatMessages((prev) => prev.filter((m) => m.id !== 'temp'));
-      toast.error('ส่งข้อความล้มเหลว');
+      toast.error('ส่งข้อความล้มเหลว', {
+        description: err instanceof Error ? err.message : 'เกิดข้อผิดพลาด',
+      });
     } finally {
       setIsChatLoading(false);
     }
@@ -389,13 +397,14 @@ export default function DocumentSummarizer() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${selectedDoc.filename.replace(/\.[^/.]+$/, '')}_summary.${format}`;
+      // Server always returns Markdown — use .md extension regardless of requested format
+      a.download = `${selectedDoc.filename.replace(/\.[^/.]+$/, '')}_summary.md`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       setShowExportDialog(false);
-      toast.success(`ส่งออกเป็น ${format.toUpperCase()} สำเร็จ`);
+      toast.success('ส่งออกสรุปเป็น Markdown สำเร็จ');
     } catch {
       toast.error('ส่งออกล้มเหลว');
     }

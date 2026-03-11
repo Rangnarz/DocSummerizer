@@ -1,63 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { writeFile, unlink, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
-import os from 'os';
 
-// Use /tmp on serverless (Vercel), fallback to OS temp dir
-const UPLOAD_DIR = path.join(os.tmpdir(), 'briefly-uploads');
+// Determine file type from MIME type and file extension (extension takes priority)
+function detectFileType(file: File): string | null {
+  const ext = file.name.split('.').pop()?.toLowerCase();
 
-async function ensureUploadDir() {
-  if (!existsSync(UPLOAD_DIR)) {
-    await mkdir(UPLOAD_DIR, { recursive: true });
-  }
+  // Extension-based detection (most reliable)
+  if (ext === 'pdf') return 'pdf';
+  if (ext === 'docx') return 'docx';
+  if (ext === 'txt') return 'txt';
+
+  // MIME-type fallback
+  if (file.type === 'application/pdf') return 'pdf';
+  if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return 'docx';
+  if (file.type === 'text/plain') return 'txt';
+
+  return null;
 }
 
-// Extract text from file buffer directly (no CLI tools needed)
-async function extractTextFromBuffer(
-  buffer: Uint8Array,
-  fileType: string,
-  _filePath?: string
-): Promise<string> {
-  try {
-    switch (fileType) {
-      case 'txt': {
-        return new TextDecoder('utf-8').decode(buffer).trim();
+// Extract readable text from a file buffer
+async function extractTextFromBuffer(buffer: Buffer, fileType: string): Promise<string> {
+  switch (fileType) {
+    case 'txt': {
+      const text = buffer.toString('utf-8').trim();
+      if (!text) throw new Error('ไฟล์ TXT ว่างเปล่า');
+      return text;
+    }
+
+    case 'pdf': {
+      // pdf-parse is a real Node.js CommonJS module — kept external via next.config.ts
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require('pdf-parse');
+
+      let data: { text: string; numpages: number };
+      try {
+        data = await pdfParse(buffer);
+      } catch (parseError) {
+        console.error('pdf-parse failed:', parseError);
+        throw new Error('ไม่สามารถอ่านไฟล์ PDF ได้ ไฟล์อาจเสียหายหรือมีรหัสผ่านป้องกัน');
       }
-      case 'pdf': {
-        // Try to use pdf-parse if available, otherwise read raw text
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const pdfParse = (await import(/* webpackIgnore: true */ 'pdf-parse' as string)).default;
-          const data = await pdfParse(buffer);
-          return (data.text || '').trim();
-        } catch {
-          // Fallback: attempt basic text extraction from buffer
-          const text = new TextDecoder('utf-8')
-            .decode(buffer)
-            .replace(/[^\x20-\x7E\n\r\t\u0E00-\u0E7F]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          if (text.length > 50) return text;
-          throw new Error(
-            'PDF text extraction is not available. Please upload a .txt file instead, or install pdf-parse.'
-          );
-        }
-      }
-      case 'docx': {
+
+      const text = (data.text || '').trim();
+
+      if (!text || text.length < 50) {
+        // Likely a scanned / image-only PDF
         throw new Error(
-          'DOCX file processing is not available in serverless environment. Please upload a .txt file instead.'
+          `ไม่สามารถดึงข้อความจาก PDF ได้ (${data.numpages} หน้า)\n` +
+          'PDF นี้อาจเป็นไฟล์สแกน (รูปภาพ) ซึ่งไม่มีข้อความที่อ่านได้\n' +
+          'กรุณาแปลงเป็น PDF ที่มีข้อความ หรืออัปโหลดเป็นไฟล์ .txt แทน'
         );
       }
-      default:
-        throw new Error(`Unsupported file type: ${fileType}`);
+
+      return text;
     }
-  } catch (error) {
-    console.error('Text extraction error:', error);
-    throw error instanceof Error
-      ? error
-      : new Error('Failed to extract text from document');
+
+    case 'docx': {
+      throw new Error(
+        'ขณะนี้ยังไม่รองรับไฟล์ DOCX กรุณาแปลงเป็น PDF หรือ TXT ก่อนอัปโหลด'
+      );
+    }
+
+    default:
+      throw new Error(`ประเภทไฟล์ไม่ถูกต้อง: ${fileType}`);
   }
 }
 
@@ -83,29 +87,18 @@ export async function GET() {
 // POST - Upload a new document
 export async function POST(request: NextRequest) {
   try {
-    await ensureUploadDir();
-
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'ไม่พบไฟล์ที่แนบมา' }, { status: 400 });
     }
 
-    // Determine file type
-    let fileType = 'txt';
-    if (file.type === 'application/pdf') {
-      fileType = 'pdf';
-    } else if (
-      file.type ===
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ) {
-      fileType = 'docx';
-    } else if (file.type === 'text/plain') {
-      fileType = 'txt';
-    } else {
+    // Detect file type from both extension and MIME type
+    const fileType = detectFileType(file);
+    if (!fileType) {
       return NextResponse.json(
-        { error: 'Unsupported file type' },
+        { error: 'ประเภทไฟล์ไม่ถูกต้อง รองรับเฉพาะ PDF, DOCX และ TXT' },
         { status: 400 }
       );
     }
@@ -113,65 +106,52 @@ export async function POST(request: NextRequest) {
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { error: 'File size exceeds 10MB limit' },
+        { error: 'ขนาดไฟล์เกินกำหนด (สูงสุด 10MB)' },
         { status: 400 }
       );
     }
 
     // Read file into buffer
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    // Extract text directly from buffer (no filesystem needed for txt)
+    // Extract text from the buffer
     let content: string;
-    let tempFilePath: string | undefined = undefined;
-
     try {
       content = await extractTextFromBuffer(buffer, fileType);
     } catch (extractError) {
-      // If direct extraction fails, try via temp file
-      const tempFileName = `${Date.now()}-${file.name}`;
-      tempFilePath = path.join(UPLOAD_DIR, tempFileName);
-      await writeFile(tempFilePath, buffer);
-
-      try {
-        content = await extractTextFromBuffer(buffer, fileType, tempFilePath);
-      } catch {
-        throw extractError;
-      }
+      const message =
+        extractError instanceof Error
+          ? extractError.message
+          : 'ไม่สามารถดึงข้อความจากเอกสารได้';
+      return NextResponse.json({ error: message }, { status: 422 });
     }
 
-    try {
-      if (!content || content.length < 10) {
-        throw new Error('Could not extract meaningful text from the document');
-      }
-
-      // Create document record
-      const document = await db.document.create({
-        data: {
-          filename: file.name,
-          fileType,
-          fileSize: file.size,
-          content,
-          status: 'uploaded',
-          summaryMode: 'general',
-          summaryLength: 'medium',
-        },
-        include: {
-          tags: true,
-        },
-      });
-
-      return NextResponse.json(document);
-    } finally {
-      // Clean up temporary file if created
-      if (tempFilePath) {
-        try {
-          await unlink(tempFilePath);
-        } catch {
-          // Ignore cleanup errors
-        }
-      }
+    // Validate extracted content length
+    if (!content || content.length < 20) {
+      return NextResponse.json(
+        { error: 'ไม่สามารถดึงข้อความที่มีความหมายจากเอกสารได้' },
+        { status: 422 }
+      );
     }
+
+    // Create document record in database
+    const document = await db.document.create({
+      data: {
+        filename: file.name,
+        fileType,
+        fileSize: file.size,
+        content,
+        status: 'uploaded',
+        summaryMode: 'general',
+        summaryLength: 'medium',
+      },
+      include: {
+        tags: true,
+      },
+    });
+
+    return NextResponse.json(document);
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
@@ -179,7 +159,7 @@ export async function POST(request: NextRequest) {
         error:
           error instanceof Error
             ? error.message
-            : 'Failed to process document',
+            : 'เกิดข้อผิดพลาดในการประมวลผลเอกสาร',
       },
       { status: 500 }
     );

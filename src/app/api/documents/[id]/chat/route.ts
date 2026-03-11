@@ -61,7 +61,7 @@ export async function POST(
       );
     }
 
-    // Get previous chat history
+    // Get previous chat history BEFORE saving the new user message
     const previousMessages = await db.chatMessage.findMany({
       where: { documentId: id },
       orderBy: { createdAt: 'asc' },
