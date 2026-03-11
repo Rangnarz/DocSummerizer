@@ -185,7 +185,7 @@ ${lengthConfig.instruction}
 
 Target length: approximately ${lengthConfig.maxWords} words.
 
-Respond in Thai language unless the document is in English, then respond in English.`,
+CRITICAL REQUIREMENT: You MUST ALWAYS respond in Thai language ONLY. All generated text, including summaries, concepts, takeways, and especially the Q&A Flashcards, must be written entirely in beautiful Thai. Do not respond in English.`,
           },
           {
             role: 'user',
