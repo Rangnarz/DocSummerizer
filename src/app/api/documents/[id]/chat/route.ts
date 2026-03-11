@@ -84,7 +84,7 @@ export async function POST(
       });
 
       // Truncate content if too long
-      const maxLength = 15000;
+      const maxLength = 6000;
       const documentContent =
         document.content.length > maxLength
           ? document.content.substring(0, maxLength) +
@@ -99,7 +99,7 @@ export async function POST(
 
       // Create the chat completion
       const completion = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         messages: [
           {
             role: 'system',

@@ -357,8 +357,9 @@ export default function DocumentSummarizer() {
       setChatMessages((prev) => [...prev, data.userMessage, data.assistantMessage]);
     } catch (err) {
       setChatMessages((prev) => prev.filter((m) => m.id !== 'temp'));
+      setChatInput(userMessage); // Restore input so user doesn't lose their question
       toast.error('ส่งข้อความล้มเหลว', {
-        description: err instanceof Error ? err.message : 'เกิดข้อผิดพลาด',
+        description: err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
       });
     } finally {
       setIsChatLoading(false);
