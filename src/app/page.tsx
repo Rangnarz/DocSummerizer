@@ -662,8 +662,8 @@ export default function DocumentSummarizer() {
           </motion.div>
 
           {/* Summary & Chat Panel */}
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2">
-            <Card className="h-full">
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2 flex flex-col">
+            <Card className="flex flex-col flex-1 h-full min-h-[600px]">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -708,7 +708,7 @@ export default function DocumentSummarizer() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col flex-1 pb-6">
                 {!selectedDoc ? (
                   <div className="text-center py-12 text-slate-500">
                     <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -716,7 +716,7 @@ export default function DocumentSummarizer() {
                     <p className="text-sm">เลือกเอกสารจากรายการด้านซ้าย</p>
                   </div>
                 ) : (
-                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
                     <TabsList className={`grid w-full ${selectedDoc.summaryMode === 'study' && extractFlashcards(selectedDoc.summary || '').length > 0 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                       <TabsTrigger value="summary">สรุปเอกสาร</TabsTrigger>
                       {selectedDoc.summaryMode === 'study' && extractFlashcards(selectedDoc.summary || '').length > 0 && (
@@ -729,7 +729,7 @@ export default function DocumentSummarizer() {
                       </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="summary" className="mt-4 space-y-4">
+                    <TabsContent value="summary" className="mt-4 flex flex-col flex-1 space-y-4 data-[state=inactive]:hidden">
                       {/* Mode Selection */}
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -786,8 +786,8 @@ export default function DocumentSummarizer() {
 
                       {/* Summary Content */}
                       {selectedDoc.status === 'summarized' && selectedDoc.summary ? (
-                        <div className="space-y-4">
-                          <ScrollArea className="h-[300px] rounded-lg border p-4 bg-slate-50 dark:bg-slate-800/30">
+                        <div className="space-y-4 flex flex-col flex-1">
+                          <ScrollArea className="flex-1 min-h-[300px] max-h-[50vh] rounded-lg border p-4 bg-slate-50 dark:bg-slate-800/30 shadow-inner">
                             <div className="prose prose-sm dark:prose-invert max-w-none">
                               <ReactMarkdown>{selectedDoc.summary}</ReactMarkdown>
                             </div>
@@ -823,8 +823,8 @@ export default function DocumentSummarizer() {
                       )}
                     </TabsContent>
 
-                    <TabsContent value="chat" className="mt-4">
-                      <div className="flex flex-col h-[400px]">
+                    <TabsContent value="chat" className="mt-4 flex flex-col flex-1 data-[state=inactive]:hidden">
+                      <div className="flex flex-col flex-1 min-h-[400px] max-h-[60vh]">
                         <ScrollArea className="flex-1 pr-4">
                           {chatMessages.length === 0 ? (
                             <div className="text-center py-8 text-slate-500">
@@ -836,8 +836,8 @@ export default function DocumentSummarizer() {
                             <div className="space-y-4">
                               {chatMessages.map((msg) => (
                                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                  <div className={`max-w-[80%] rounded-lg p-3 ${msg.role === 'user' ? 'bg-violet-500 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${msg.role === 'user' ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-tr-sm' : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-tl-sm'}`}>
+                                    <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'text-white prose-p:text-white prose-headings:text-white prose-strong:text-white' : 'dark:prose-invert'}`}>
                                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                                     </div>
                                   </div>
@@ -862,10 +862,10 @@ export default function DocumentSummarizer() {
                       </div>
                     </TabsContent>
                     
-                    <TabsContent value="flashcards" className="mt-4">
-                      <div className="flex flex-col h-[400px]">
-                        <ScrollArea className="flex-1 pr-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
+                    <TabsContent value="flashcards" className="mt-4 flex flex-col flex-1 data-[state=inactive]:hidden">
+                      <div className="flex flex-col flex-1 min-h-[400px] max-h-[60vh]">
+                        <ScrollArea className="flex-1 pr-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-4 pt-2">
                             {extractFlashcards(selectedDoc.summary || '').map((card, idx) => (
                               <Flashcard key={idx} q={card.q} a={card.a} />
                             ))}
