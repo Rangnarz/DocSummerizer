@@ -121,21 +121,28 @@ const extractFlashcards = (text: string) => {
 
   for (let i = 0; i < sections.length; i++) {
     const line = sections[i].trim();
-    const lowerLine = line.toLowerCase().replace(/\*/g, '');
+    const cleanLine = line.replace(/\*/g, '').replace(/_/g, '').trim();
+    const lowerLine = cleanLine.toLowerCase();
 
-    if (lowerLine.startsWith('q') && lowerLine.match(/^q\d*[:.)-]/)) {
+    // Match variations of Q: "q1:", "q:", "คำถาม:", "ถาม:"
+    const isQ = lowerLine.match(/^(q\d*[:.)-]|คำถาม\d*[:.)-]|ถาม\d*[:.)-])/i) || lowerLine.startsWith('q:') || lowerLine.startsWith('คำถาม:') || lowerLine.startsWith('ถาม:');
+    
+    // Match variations of A: "a1:", "a:", "คำตอบ:", "ตอบ:"
+    const isA = lowerLine.match(/^(a\d*[:.)-]|คำตอบ\d*[:.)-]|ตอบ\d*[:.)-])/i) || lowerLine.startsWith('a:') || lowerLine.startsWith('คำตอบ:') || lowerLine.startsWith('ตอบ:');
+
+    if (isQ) {
       if (currentQ && currentA) {
         flashcards.push({ q: currentQ.trim(), a: currentA.trim() });
       }
-      currentQ = line.replace(/^\*\*?Q\d*[:.)-]\*\*?\s*/i, '').replace(/^Q\d*[:.)-]\s*/i, '');
+      currentQ = cleanLine.replace(/^(Q\d*|คำถาม\d*|ถาม\d*|Q|คำถาม|ถาม)\s*[:.)-]?\s*/i, '');
       currentA = '';
       state = 'q';
-    } else if (lowerLine.startsWith('a') && lowerLine.match(/^a\d*[:.)-]/)) {
-      currentA = line.replace(/^\*\*?A\d*[:.)-]\*\*?\s*/i, '').replace(/^A\d*[:.)-]\s*/i, '');
+    } else if (isA) {
+      currentA = cleanLine.replace(/^(A\d*|คำตอบ\d*|ตอบ\d*|A|คำตอบ|ตอบ)\s*[:.)-]?\s*/i, '');
       state = 'a';
     } else if (line !== '') {
-      if (state === 'q') currentQ += '\n' + line;
-      else if (state === 'a') currentA += '\n' + line;
+      if (state === 'q') currentQ += '\n' + cleanLine;
+      else if (state === 'a') currentA += '\n' + cleanLine;
     }
   }
   if (currentQ && currentA) {
@@ -225,6 +232,7 @@ export default function DocumentSummarizer() {
   useEffect(() => {
     if (selectedDoc) {
       fetchChatMessages(selectedDoc.id);
+      setActiveTab('summary'); // Reset tab when a new document is selected
     }
   }, [selectedDoc?.id]);
 
