@@ -1,3 +1,5 @@
+[![Briefly AI - Document Summarize](https://img.youtube.com/vi/y4Y8AD7bPf8/0.jpg)](https://www.youtube.com/watch?v=y4Y8AD7bPf8)
+
 ## รายชื่อสมาชิก
 ## นายธนวัตน์ สว่างศรี — Website Development 
 Responsibilities:
